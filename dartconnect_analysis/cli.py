@@ -4,10 +4,12 @@ import argparse
 import os
 import glob
 import pandas
+from config import report_config
+from load_files import process_files
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--action", choices=['load'], default='load_files', required=True)
+parser.add_argument("--action", choices=['load'], default='load', required=True)
 parser.add_argument("--load_files", default='./downloads/', help="Directory or file to load")
 parser.add_argument("--debug", action='store_true', help="Additional logging", default=False)
 
@@ -21,26 +23,10 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
-def load_main():
-    files = args.load_files
-    if files.startswith('.'):
-        file_path = os.path.join(os.getcwd(), files)
-    else:
-        file_path = files
-    if files.endswith('.csv'):
-        pass
-    else:
-        file_path = os.path.join(file_path, '*')
-
-    csv_files = glob.glob(file_path)
-
-    for file in csv_files:
-        print(file)
-
 def main():
     print("Made it to main")
     if args.action == 'load':
-        load_main()
+        process_files(args.load_files)
     else:
         raise NotImplementedError
 
