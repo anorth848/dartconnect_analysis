@@ -1,4 +1,3 @@
-import psycopg2
 import csv
 import os
 import glob
@@ -9,8 +8,8 @@ def identify_report_type(column_list):
     s_column_list=set(column_list)
     report_type = None
     for report in report_config:
-        s_id_columns = set(report['IdentifierColumns'])
-        if s_id_columns.issubset(s_column_list):
+        rt_column_list = set(report['Columns'])
+        if s_column_list == rt_column_list:
             report_type=report['ReportType']
             print(f'{report_type} detected')
             break
@@ -54,21 +53,3 @@ def load_csv_to_postgresql(conn, cursor, csv_file, table_name):
             )
 
     conn.commit()
-
-
-def init_pg():
-    # Example usage
-    conn = psycopg2.connect(
-        # host="your_host",
-        database="dca"
-        # user="your_user",
-        # password="your_password"
-    )
-
-    cursor = conn.cursor()
-    return conn, cursor
-
-
-def deinit_pg(cursor, conn):
-    cursor.close()
-    conn.close()
