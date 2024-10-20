@@ -143,7 +143,7 @@ column_mapping = {
     "Season": { "ColumnName": "season", "DataType": "VARCHAR(128)" },
     "Set #": { "ColumnName": "set_number", "DataType": "INTEGER" },
     "Start Date": { "ColumnName": "start_date", "DataType": "DATE" },
-    "Start": {"ColumnName": "player_format", "DataType": "BOOLEAN"},
+    "Start": {"ColumnName": "started_leg", "DataType": "BOOLEAN"},
     "Team": { "ColumnName": "team_name", "DataType": "VARCHAR(256)" },
     "Team/Division": { "ColumnName": "team_division", "DataType": "VARCHAR(256)" },
     "Trips (M)": { "ColumnName": "triples_count", "DataType": "INTEGER" },
