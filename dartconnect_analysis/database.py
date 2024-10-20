@@ -1,6 +1,5 @@
 import sqlite3
 import logging
-import json
 from config import report_config, column_mapping
 
 

@@ -2,20 +2,24 @@ import csv
 import os
 import glob
 import logging
-from config import report_config
 
-def identify_report_type(column_list):
+from pandas.plotting import table
+
+from config import report_config
+from database import open_database
+
+
+def identify_report(column_list):
     s_column_list=set(column_list)
-    report_type = None
+    rc = None
     for report in report_config:
         rt_column_list = set(report['Columns'])
         if s_column_list == rt_column_list:
-            report_type=report['ReportType']
-            print(f'{report_type} detected')
+            rc=report
+            print(f'{report["ReportType"]} detected')
             break
 
-    return report_type
-
+    return rc
 
 def process_files(files):
     if files.startswith('.'):
@@ -29,27 +33,48 @@ def process_files(files):
 
     csv_files = glob.glob(file_path)
 
+    conn, cur = open_database()
+
     for file in csv_files:
         with open(file, 'r') as f:
             counter=1
             reader=csv.reader(f)
             for row in reader:
                 if counter == 1:
-                    report_type = identify_report_type(row)
-                    if report_type is None:
+                    report = identify_report(row)
+                    if report is None:
                         logging.warning(f'Report config not found for {file}')
+                        break
+                    else:
+                        report_type = report['ReportType']
+                        table_name = report['TableName']
+                        logging.info(f'Report Type {report_type}, Table name {table_name}')
+                        col_sql = ''
+                        num_cols = len(row)
+                        print(num_cols)
+                        cols = 0
+                        for column in row:
+                            cols += 1
+                            if cols < num_cols:
+                                col_sql += '?, '
+                            else:
+                                col_sql += '?'
+                else:
+                    load_csv_to_db(cur, row, table_name, col_sql)
+
                 counter += 1
+            conn.commit()
+    cur.close()
+    conn.close()
+# c.execute("INSERT INTO rounds (tournament_id, round_number, round_status) VALUES (?, ?, 'OPEN')",
+#                   (self.tournament_id, next_round))
 
-
-def load_csv_to_postgresql(conn, cursor, csv_file, table_name):
-    with open(csv_file, 'r') as f:
-        reader = csv.reader(f)
-        next(reader)  # Skip header row if it exists
-
-        for row in reader:
-            cursor.execute(
-                f"INSERT INTO {table_name} VALUES ({', '.join(['%s'] * len(row))})",
-                row
-            )
-
-    conn.commit()
+def load_csv_to_db(cur, row, table_name, cols):
+    sql = f'INSERT INTO {table_name} VALUES ({cols});'
+    cur.execute(sql, tuple(row))
+    #print(sql)
+    # sql = f'INSERT INTO {table_name} VALUES {[f"{i}" for i in row}'
+    # cursor.execute(
+    #     f"INSERT INTO {table_name} VALUES ({', '.join(['%s'] * len(row))})",
+    #     row
+    # )
